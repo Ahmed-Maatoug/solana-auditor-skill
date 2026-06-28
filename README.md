@@ -1,32 +1,97 @@
 # Solana Auditor Skill
 
-The `solana-auditor-skill` is a production-ready extension for the **Solana AI Kit** that transforms any generic coding agent into an elite Smart Contract Security Auditor. 
+> **An all-in-one AI security expert for Solana/Anchor smart contracts.**
 
-## The Problem it Solves
-Currently, AI coding agents act as helpful pairs of hands—they write code, fix syntax, and explain logic. However, when dealing with Solana and the Anchor framework, **"working code" is not enough**. Submitting working but insecure code leads to massive exploits (e.g., missing PDA validation, account substitution, signer bypasses). 
+A production-ready skill for the [Solana AI Kit](https://github.com/solanabr/solana-ai-kit) that transforms any coding agent into an elite Smart Contract Security Auditor — not just a quick code reviewer, but a formal verification engine that produces structured audit reports.
 
-The `solana-auditor-skill` solves the "Security Blindspot" problem. It forces the AI into a strict "Zero Trust" persona, equipping it with an encyclopedic knowledge of Solana-specific attack vectors, and mandates the generation of a formal security report rather than casual coding advice.
+## The Problem
 
-## What it Does
-- **Progressive Vulnerability Loading:** Instead of dumping an entire security manual into the AI's context window (which wastes tokens and causes hallucination), this skill uses a routing architecture (`SKILL.md`). The AI dynamically loads specific markdown files (e.g., `pda_validation.md`, `cpi_security.md`) *only* if the audited codebase actually uses those features.
-- **Formal Verification Reporting:** Forces the AI to generate a standardized Audit Report, including a Severity Matrix, Exploit Impact, and exact Code Remediation steps.
-- **`/audit` Workflow Command:** Provides a custom command config so developers can simply type `/audit` to trigger a sweep.
+AI coding agents are great at writing Solana programs, but they have a critical blind spot: **they don't think like attackers.** A generic agent will happily generate code that compiles and passes basic tests but is vulnerable to PDA seed manipulation, missing signer checks, integer overflow exploits, or CPI privilege escalation.
 
-## How to Install
+The `solana-auditor-skill` solves this by forcing the AI into a strict adversarial security persona, equipping it with deep knowledge of Solana-specific attack vectors, and mandating formal audit report generation.
 
-This skill is designed to slot perfectly into standard AI workspace configurations.
+## Architecture
 
-### Automated Install (Recommended)
-Run the provided installer script to copy the skill into your local `.agents` configuration folder.
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   solana-auditor-skill                          │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  SKILL.md (Entry Point & Router)                          │  │
+│  │  ├── Classifies audit scope (full / instruction / check)  │  │
+│  │  ├── Routes to vulnerability sub-skills on demand         │  │
+│  │  └── Defines audit report template                        │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                              │                                  │
+│                    progressive loading                          │
+│                              ▼                                  │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  Vulnerability Knowledge Base                             │  │
+│  │  ├── pda_validation.md        (Seeds, bumps, init)        │  │
+│  │  ├── signer_authorization.md  (Missing signers, privesc)  │  │
+│  │  ├── account_substitution.md  (Fake sysvars, mints)       │  │
+│  │  ├── cpi_security.md          (Arbitrary CPI, re-entry)   │  │
+│  │  ├── arithmetic_overflow.md   (Overflow, precision loss)  │  │
+│  │  └── closing_accounts.md      (Revival attacks)           │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────────┐                        │
+│  │  rules/       │  │  commands/        │                        │
+│  │  auditor.md   │  │  audit.json       │                        │
+│  │  (Zero Trust  │  │  (/audit trigger) │                        │
+│  │   persona)    │  │                   │                        │
+│  └──────────────┘  └──────────────────┘                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## What's Included
+
+| Component | Description |
+|---|---|
+| [`skill/SKILL.md`](skill/SKILL.md) | Entry point with routing table, operating procedure, and report template |
+| [`skill/vulnerabilities/`](skill/vulnerabilities/) | 6 deep-dive vulnerability files with vulnerable + secure Rust/Anchor code examples |
+| [`rules/auditor.md`](rules/auditor.md) | Agent persona rules enforcing Zero Trust adversarial mindset |
+| [`commands/audit.json`](commands/audit.json) | `/audit` slash command to trigger a full security sweep |
+| [`install.sh`](install.sh) | One-line installer for `.agents/` workspace configuration |
+
+## Vulnerability Coverage
+
+| Attack Surface | Sub-Skill | Key Checks |
+|---|---|---|
+| PDA Manipulation | `pda_validation.md` | Missing seeds, non-canonical bumps, re-initialization |
+| Privilege Escalation | `signer_authorization.md` | Missing `Signer` constraint, owner/authority confusion |
+| Account Spoofing | `account_substitution.md` | Fake sysvars, fake token programs, mint substitution |
+| CPI Exploits | `cpi_security.md` | Arbitrary CPI targets, missing signer seeds, indirect re-entrancy |
+| Math Exploits | `arithmetic_overflow.md` | Unchecked arithmetic, precision loss, unsafe `as` casts |
+| Account Lifecycle | `closing_accounts.md` | Revival attacks, missing discriminator reset |
+
+## Installation
+
+### Automated (Recommended)
 ```bash
 chmod +x install.sh
 ./install.sh ./.agents
 ```
 
-### Manual Install
-1. Copy the `skill/` directory into your agent's skills configuration folder.
-2. Copy `rules/auditor.md` into your agent's rules directory to enforce the Auditor Persona.
-3. Copy `commands/audit.json` into your agent's slash commands directory.
+### Manual
+1. Copy `skill/` → your agent's `skills/solana-auditor-skill/` directory
+2. Copy `rules/auditor.md` → your agent's `rules/` directory
+3. Copy `commands/audit.json` → your agent's `commands/` directory
+
+### As a Git Submodule
+```bash
+git submodule add https://github.com/Ahmed-Maatoug/solana-auditor-skill.git .agents/skills/solana-auditor-skill
+```
+
+## Usage
+
+Once installed, simply ask your agent:
+- *"Audit this Anchor program for security vulnerabilities"*
+- *"Check this instruction for missing signer verification"*
+- *"Generate a formal audit report for this codebase"*
+
+Or use the `/audit` slash command to trigger a comprehensive security sweep.
 
 ## License
-MIT License. See `LICENSE` for details.
+
+[MIT](LICENSE)
