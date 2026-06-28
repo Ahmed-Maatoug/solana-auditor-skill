@@ -45,6 +45,7 @@ To remain token-efficient, only load specific vulnerability checks based on the 
 | Calls other programs via `CpiContext`, `invoke`, `invoke_signed` | [CPI Security](vulnerabilities/cpi_security.md) |
 | Performs arithmetic (`+`, `-`, `*`, `/`), calculates fees/shares | [Arithmetic & Overflow](vulnerabilities/arithmetic_overflow.md) |
 | Closes accounts, drains lamports, has cleanup logic | [Closing Accounts](vulnerabilities/closing_accounts.md) |
+| Uses Token-2022, transfer hooks, permanent delegates | [Token Extensions](vulnerabilities/token_extensions.md) |
 
 ## Operating Procedure
 
@@ -92,3 +93,5 @@ Structure your findings as:
 3. Ensure all arithmetic operations use checked methods (`checked_add`, `checked_sub`, etc.) or that `overflow-checks = true` is set in `Cargo.toml` `[profile.release]`.
 4. Never approve code that uses `init_if_needed` without explicit justification and re-initialization guards.
 5. Flag all `as` casts between numeric types as potential truncation vulnerabilities.
+6. When a vulnerability pattern matches a known real-world exploit, cite it. See [Real-World Exploits](references/real_world_exploits.md) for case studies.
+7. When auditing protocols that accept Token-2022 mints, always check for transfer hooks, permanent delegates, and transfer fees. See [Token Extensions](vulnerabilities/token_extensions.md).
