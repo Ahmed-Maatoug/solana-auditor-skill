@@ -1,22 +1,32 @@
 # Solana Auditor Skill
 
-The `solana-auditor-skill` is a production-ready extension for AI coding agents that transforms them into elite Smart Contract Security Auditors. 
+The `solana-auditor-skill` is a production-ready extension for the **Solana AI Kit** that transforms any generic coding agent into an elite Smart Contract Security Auditor. 
 
-It is designed to be **progressively-loaded** and **token-efficient**, meaning the AI will only load the specific vulnerability checks (like PDA validation or Account Substitution) that are relevant to the Rust/Anchor code being analyzed.
+## The Problem it Solves
+Currently, AI coding agents act as helpful pairs of hands—they write code, fix syntax, and explain logic. However, when dealing with Solana and the Anchor framework, **"working code" is not enough**. Submitting working but insecure code leads to massive exploits (e.g., missing PDA validation, account substitution, signer bypasses). 
 
-## Features
-- **Progressive Knowledge Base:** Modular vulnerability checks that don't bloat the AI's context window.
-- **Strict Persona:** Built-in rules to enforce a "Zero Trust" exploit mindset.
-- **Formal Reporting:** Forces the AI to output findings in a standardized Audit Report format (Severity, Impact, Remediation).
+The `solana-auditor-skill` solves the "Security Blindspot" problem. It forces the AI into a strict "Zero Trust" persona, equipping it with an encyclopedic knowledge of Solana-specific attack vectors, and mandates the generation of a formal security report rather than casual coding advice.
 
-## Installation
+## What it Does
+- **Progressive Vulnerability Loading:** Instead of dumping an entire security manual into the AI's context window (which wastes tokens and causes hallucination), this skill uses a routing architecture (`SKILL.md`). The AI dynamically loads specific markdown files (e.g., `pda_validation.md`, `cpi_security.md`) *only* if the audited codebase actually uses those features.
+- **Formal Verification Reporting:** Forces the AI to generate a standardized Audit Report, including a Severity Matrix, Exploit Impact, and exact Code Remediation steps.
+- **`/audit` Workflow Command:** Provides a custom command config so developers can simply type `/audit` to trigger a sweep.
 
-To install this skill into your AI coding agent environment, simply copy the `skill/` and `rules/` directories into your agent's customization root (e.g., `~/.gemini/config/` or your workspace's `.agents/` folder).
+## How to Install
 
-### Manual Installation
-1. Clone this repository.
-2. Copy `skill/SKILL.md` and the `skill/vulnerabilities/` folder to your agent's skills directory.
-3. Copy `rules/auditor.md` to your agent's rules directory (or append it to `AGENTS.md`).
+This skill is designed to slot perfectly into standard AI workspace configurations.
 
-## Usage
-Once installed, simply ask your agent to "audit this Solana program" or paste your Anchor code. The skill will automatically trigger, routing the AI through the vulnerability checks and generating a formal security report.
+### Automated Install (Recommended)
+Run the provided installer script to copy the skill into your local `.agents` configuration folder.
+```bash
+chmod +x install.sh
+./install.sh ./.agents
+```
+
+### Manual Install
+1. Copy the `skill/` directory into your agent's skills configuration folder.
+2. Copy `rules/auditor.md` into your agent's rules directory to enforce the Auditor Persona.
+3. Copy `commands/audit.json` into your agent's slash commands directory.
+
+## License
+MIT License. See `LICENSE` for details.
